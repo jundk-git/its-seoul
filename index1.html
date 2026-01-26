@@ -1,0 +1,1004 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🚌 it's seoul ...</title>
+    <style>
+        /* 기본 스타일 및 컨테이너 */
+
+.asset-key-highlight { 
+    color: #004085; /* 진한 파란색 글씨 */ 
+    font-weight: 900; /* 매우 두껍게 강조 */
+    font-size: 1.0em; /* 주변 텍스트보다 살짝 크게 */
+    background-color: #cce5ff; /* 연한 파란색 배경 */
+    padding: 2px 5px; /* 내부 여백 */
+    border-radius: 3px; /* 모서리 둥글게 */
+    display: inline-block; /* 텍스트 너비만큼만 배경 적용 */
+}
+
+/* 기본 스타일 및 컨테이너 */
+body { 
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI\", Roboto, \"Helvetica Neue\", Arial, sans-serif;
+    line-height: 1.6; 
+    padding: 0; /* ⬅️ body의 기본 padding을 0으로 설정 */
+    margin: 0; /* ⬅️ body의 기본 margin을 0으로 설정 */
+    background-color: #f4f7f9; 
+}
+.main-container { 
+    /* 1. max-width 제거: 최대 너비 제한 해제 */
+    max-width: 100%; 
+    /* 2. 중앙 정렬 및 여백 제거 */
+    margin: 0; /* ⬅️ 중앙 정렬 제거 */
+    /* 3. 내부 여백은 유지하거나 줄일 수 있습니다. (요청에 따라 0으로 변경) */
+    padding: 1rem 1rem; /* ⬅️ 좌우 패딩을 줄이거나 제거 */
+    
+    background: white; 
+    /* 전체 화면을 꽉 채울 때는 테두리나 그림자가 부자연스러울 수 있어 제거/조정하는 것이 일반적입니다. */
+    border-radius: 0; 
+    box-shadow: none; 
+}
+        
+        h1 { 
+            color: #333; 
+            font-size: 1.5rem; 
+            margin-bottom: 1rem; /* ⬅️ 0에서 1rem으로 수정하여 아래 공백을 추가함 */ 
+            text-align: center; 
+        }
+        h2 { color: #2c3e50; border-bottom: 2px solid #ecf0f1; padding-bottom: 10px; margin-top: 1rem; }
+        
+        input, textarea { 
+            width: 100%; 
+            padding: 10px; 
+            margin-bottom: 10px; 
+            border: 1px solid #ccc; 
+            border-radius: 4px; 
+            box-sizing: border-box;
+        }
+        
+        /* 버튼 스타일 */
+        .btn-group { margin-top: 15px; display: flex; gap: 10px; justify-content: flex-end; }
+        .btn {
+            padding: 10px 18px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: background-color 0.2s;
+            flex-grow: 1; 
+        }
+        .btn-bottom {
+            flex-grow: 0; 
+        }
+        .btn:disabled {
+            background-color: #cccccc !important;
+            cursor: not-allowed;
+        }
+        .btn-primary { background-color: #007bff; color: white; }
+        .btn-primary:hover { background-color: #0056b3; }
+        .btn-secondary { background-color: #6c757d; color: white; }
+        .btn-secondary:hover { background-color: #5a6268; }
+        .btn-danger { background-color: #dc3545; color: white; }
+        .btn-danger:hover { background-color: #c82333; }
+        .btn-success { background-color: #28a745; color: white; }
+        .btn-success:hover { background-color: #1e7e34; }
+        
+        /* 테이블 스타일 */
+        .incident-table { width: 100%; border-collapse: collapse; margin-top: 5px; }
+        .incident-table th, .incident-table td {
+            padding: 1px 5px; 
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+            font-size: 0.8em;
+            white-space: nowrap; 
+        }
+
+        /* ⭐ 5개 단위로 굵은 구분선 추가 */
+        .incident-table tbody tr:nth-child(5n) td {
+            border-bottom: 2px solid #666 !important;
+        }
+
+        .incident-table th {
+            background-color: #e9ecef;
+            font-weight: 600;
+            color: #495057;
+            font-size: 0.8em;
+            border-bottom: 2px solid #333; /* 헤더 아래는 아주 진하게 */
+        }
+
+
+        .incident-table th {
+            background-color: #e9ecef;
+            font-weight: 600;
+            color: #495057;
+            font-size: 0.8em; /* ⭐ 추가: 헤더 글꼴 크기 압축 */
+        }
+        .incident-table td {
+      
+            color: #000; 
+            font-size: 0.8em; /* ⭐ 추가: 본문 글꼴 크기 압축 */
+        }
+
+        .incident-table tbody tr:hover {
+            background-color: #f8f9fa;
+            cursor: pointer;
+        }
+
+        /* 상태 표시 */
+        .status-success { color: #28a745; font-weight: bold; } 
+        .status-failure { color: #dc3545; font-weight: bold; } 
+        .status-offline { color: #ffc107; font-weight: bold; } 
+        .status-pending { color: #6c757d; } 
+        .status-info { background-color: #f8f9fa; padding: 0 15px; /* ⬅️ 상하 패딩을 0으로 제거 */ 
+        /* 🚨🚨🚨 사용자 요청 사항 삽입 지점 🚨🚨🚨 */
+        .status-info p { 
+            margin: 0; 
+        }
+
+         border-radius: 8px; margin-bottom: 5px; /* 하단 마진 유지 */ border: 1px solid #eee; }
+
+        /* 기준 정류장 정보 */
+        #standardInfo { 
+             font-size: 1.0rem; margin: 0; /* ⬅️ 상하 마진 모두 0으로 제거 */  
+             padding: 0 15px; /* ⬅️ 상하 패딩을 5px에서 3px로 축소 */ 
+             border: 1px solid #007bff; border-radius: 0; background-color: #e6f2ff;
+
+  
+    /* ⭐ 추가: 타이틀을 한 줄로 강제하고 넘치는 텍스트는 숨김 */
+    white-space: nowrap; 
+    overflow: hidden; 
+    text-overflow: ellipsis; 
+
+
+        }
+        #standardInfo .location-success { color: #007bff; font-weight: bold; }
+        #standardTitle { 
+                  
+    /* ⭐ 추가: 글꼴 크기 압축 및 줄 바꿈 방지 */
+    font-size: 0.9em; 
+    white-space: nowrap;
+    overflow: hidden; 
+    text-overflow: ellipsis; 
+
+                           } 
+
+        /* 목록의 일반 글자색 */
+        .incident-text { 
+            color: #000; 
+            font-weight: normal; 
+        }
+        /* 진행사항 파란색 */
+        .action-text {
+            color: #007bff; 
+            font-weight: bold;
+        }
+        /* 새로운 정류소 타입 색상 - 요청 반영 */
+        .type-color { 
+        color: #0056b3; /* 진한 파랑 */ 
+        font-weight: bold; 
+        }
+        /* 모달 스타일 */
+        .modal {
+            display: none; 
+            position: fixed; 
+            z-index: 1; 
+            left: 0;
+            top: 0;
+            width: 100%; 
+            height: 100%; 
+            overflow: auto; 
+            background-color: rgba(0,0,0,0.6); 
+        }
+        .modal-content {
+            background-color: #fefefe;
+            margin: 10% auto; 
+            padding: 25px;
+            border: 1px solid #888;
+            width: 80%; 
+            max-width: 600px;
+            border-radius: 8px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+            position: relative;
+        }
+
+/* 🚨 시설물 세부 정보 줄 간격 최소화 🚨 */
+.modal-content p {
+    margin: 3px 0; /* ⬅️ p 태그의 상하 마진을 3px로 최소화 */
+    line-height: 1.3; /* ⬅️ 줄의 높이 자체를 1.6에서 1.3 정도로 축소 */
+}
+        .close {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+        }
+        .close:hover,
+        .close:focus {
+            color: #000;
+            text-decoration: none;
+            cursor: pointer;
+        }
+        .modal-message { margin-top: 15px; padding: 10px; border-radius: 4px; background-color: #fff3cd; color: #856404; display: none; }
+        .error { color: #dc3545; font-weight: bold; }
+        .history-item { padding: 8px; border-bottom: 1px dashed #eee; font-size: 0.9em; }
+        .history-item:last-child { border-bottom: none; }
+
+/* 신규: 센터 등록 모달을 위한 추가 스타일 */
+/* 신규: 센터 등록 모달을 위한 추가 스타일 */
+.large-modal {
+    width: 90%; /* 모달 폭 넓히기 */
+    max-width: 800px;
+}
+.file-input-group {
+    margin-bottom: 15px;
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+}
+.file-input-group label {
+    display: block;
+    font-weight: bold;
+    margin-bottom: 5px;
+    color: #004085;
+}
+.incident-table-container {
+    max-height: 400px; /* 결과 목록 스크롤 가능하도록 높이 제한 */
+    overflow-y: auto;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    padding: 0;
+}
+.incident-table.small-text {
+    font-size: 0.9em;
+    width: 100%;
+    margin: 0;
+}
+
+/* 센터 등록 결과 종류 색상 강조 */
+.status-danger { background-color: #f8d7da; color: #721c24; } /* 독립: 빨강 계열 */
+.status-warning { background-color: #fff3cd; color: #856404; } /* 알뜰: 노랑 계열 */
+.status-success { background-color: #d4edda; color: #155724; } /* 미니: 초록 계열 */
+
+
+/* 아래 내용을 추가하세요 */
+#centerResultList table td {
+    border-bottom: 1px solid #004085 !important; /* 파란색 구분선 추가 */
+    padding: 8px 5px !important;              /* 가독성을 위한 간격 조정 */
+}
+
+#centerResultList table tr:last-child td {
+    border-bottom: none !important;            /* 마지막 줄 선 제거 */
+}
+
+    </style>
+</head>
+<body>
+
+    <div class="main-container">
+        <h1>🚌 it's seoul ...</h1>
+
+        <div id="standardInfo">
+            <div id="standardTitle">로딩 중...</div>
+        </div>
+
+        <div id="incidentList">
+            목록 로드 중...
+        </div>
+
+        <p style="margin-top: 20px; font-size: 0.9em; color: #6c757d;">
+            * 항목클릭 : 한번-거리, 두번-시설물 세부정보,진행사항 관리
+        </p>
+        
+        <div class="btn-group" style="margin-top: 25px; justify-content: flex-start;">
+            <button class="btn btn-secondary btn-bottom" onclick="reloadMainList()">🔄새로고침</button>
+            <button class="btn btn-primary btn-bottom" onclick="openModal('batchModal')">1. 일괄</button>
+            <button class="btn btn-primary btn-bottom" onclick="openModal('manualModal')">2. 건별</button>
+            <button class="btn btn-primary btn-bottom" onclick="openModal('centerRegisterModal')">3. 센터</button>
+        </div>
+    </div>
+
+    <div id="batchModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeModal('batchModal')">&times;</span>
+            <h2>장애 일괄등록</h2>
+            <p>BIT 장애공지 봇을 복사하여 붙여넣으세요.</p>
+            <textarea id="sampleText" rows="10" placeholder="예시: [종류] 02-223 09-27 10:15 / [종류] 01-118 09-27 13:00"></textarea>
+            <div id="batchMessage" class="modal-message"></div>
+            <div class="btn-group">
+                <button class="btn btn-primary" onclick="processBatchAddition()">일괄 등록 : 복구완료건은 삭제됩니다.</button>
+            </div>
+        </div>
+    </div>
+
+   
+<div class="modal" id="batchModal">
+        <div class="modal-content">
+            <span class="close-btn" onclick="closeModal('batchModal')">&times;</span>
+            <h2>1. 일괄 등록</h2>
+            <p>
+                **종류, 정류장ID, 장애발생시각**을 **한 줄에 하나씩** 입력합니다. <br>
+                공백이 여러 개이거나 탭이 섞여 있어도 상관없이 안정적으로 처리됩니다.
+            </p>
+            <div class="input-group">
+                <label for="batchInputArea">장애 목록 입력 (예: `[독립] 06-117 10-21 16:44`)</label>
+                <textarea id="batchInputArea" rows="10" placeholder="[독립]	06-117	10-21 16:44&#10;[독립]	10-219	10-20 16:01&#10;..."></textarea>
+            </div>
+            
+            <div id="batchRegisterMessage" class="modal-message" style="display: none;"></div>
+            
+            <div class="btn-group">
+                <button class="btn btn-primary" onclick="batchRegister()">일괄 등록 실행</button>
+            </div>
+        </div>
+    </div>
+
+<div id="detailModal" class="modal">
+    <div class="modal-content">
+        <span class="close" onclick="closeModal('detailModal')">&times;</span>
+        <h3>상세 정보 및 진행 현황</h3>                                             
+        <div class="status-info"> 
+            <p><strong id="detailStopId">N/A</strong> / <strong id="detailStopName">N/A</strong> / <strong id="detailTime">N/A</strong> 
+        </div>    
+        <h3 style="margin-top: 15px;">시설물 세부 정보</h3>
+             <div class="status-info" style="font-size: 0.9em; background-color: #f0f8ff; border: 1px solid #cceeff;">
+                <p><strong id="detailAssetKey" class="asset-key-highlight">N/A</strong> / <strong id="detailBusinessType">N/A</strong>
+                <p>디스플레이: <strong id="detailAssetType1">N/A</strong>
+                <p>정류장명: <strong id="detailAssetName">N/A</strong> / 시설물유형: <strong id="detailAssetType">N/A</strong>
+                <p>통신방식: <strong id="detailCommMethod">N/A</strong> / 통신사: <strong id="detailCommType">N/A</strong>
+                <p>사업자: <strong id="detailOperator">N/A</strong> / 제조자: <strong id="detailManufacturer">N/A</strong>
+                <p>제품종류: <strong id="detailBITType">N/A</strong> / BIT사용여부: <strong id="detailBITUsage">N/A</strong> / 장애누적: <strong id="detailIncidentCount" style="color: #dc3545;">N/A</strong>
+             </div>
+           
+            <h3>진행사항 관리</h3>
+            <textarea id="actionText" rows="4" placeholder="진행사항을 입력/수정하세요. 신규 등록 시에도 필수입니다."></textarea>
+            <div id="actionMessage" class="modal-message"></div>
+            
+            <div class="btn-group">
+                <button id="btnDetailUpdate" class="btn btn-primary" onclick="updateAction('UPDATE_ACTION')">진행사항 수정</button>
+                <button id="btnDetailDelete" class="btn btn-danger" onclick="deleteIncident()">조치완료 삭제</button>
+                
+                <button id="btnDetailCreate" class="btn btn-success" onclick="createIncidentFromDetail()">신규 등록 (장애 활성화)</button>
+            </div>
+
+            <h3 style="margin-top: 20px;">히스토리</h3>
+            <div id="historyList">히스토리 없음.</div>
+        </div>
+    </div>
+    
+    <div id="manualModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeModal('manualModal')">&times;</span>
+            <h2>장애 수동 등록</h2>
+            <p>민원 및 BIT 장애공지 봇에 없는 자료를 등록합니다.</p>
+            <input type="text" id="manualStopId" placeholder="예: 02-223">
+            <textarea id="manualActionText" rows="4" placeholder="민원처리 예정등 진행사항을 입력하세요."></textarea>
+            <div id="manualMessage" class="modal-message"></div>
+            <div class="btn-group">
+                <button class="btn btn-success" onclick="createManualIncident()">장애 수동 등록</button>
+            </div>
+        </div>
+    </div>
+
+<script>
+    // 🚨🚨🚨 NGROK 문제 해결! Cloudflare Tunnel 주소로 변경되었습니다. 🚨🚨🚨
+    // 터널을 껐다 켤 때마다 이 주소를 수동으로 업데이트해야 합니다.
+    const API_BASE_URL = 'https://exceptions-involvement-resource-obtaining.trycloudflare.com'; 
+
+    let currentStandardId = '22-142'; 
+    let activeStopId = null;         
+    // ⭐ 전역 변수 선언 위치 확인 및 초기화
+    let centerResultsTextForCopy = ''; 
+    // ⭐ 추가: 정렬 상태 변수
+    let currentSortBy = 'distance';  // 기본 정렬 기준: 'distance'
+
+    // 모달 제어 함수 (유지)
+    function openModal(modalId) {
+        document.getElementById(modalId).style.display = 'block';
+        if (modalId === 'batchModal') {
+            document.getElementById('batchMessage').style.display = 'none';
+        }
+        if (modalId === 'manualModal') { 
+            document.getElementById('manualMessage').style.display = 'none';
+            document.getElementById('manualStopId').value = '';
+            document.getElementById('manualActionText').value = '';
+        }
+    }
+    function closeModal(modalId) {
+        document.getElementById(modalId).style.display = 'none';
+    }
+    window.onclick = function(event) {
+        if (event.target.classList.contains('modal')) {
+            event.target.style.display = 'none';
+        }
+    }
+
+    // 기준 ID 설정 및 목록 새로고침
+    function setStandardId(stopId) {
+        const arsIdOnly = stopId.split(' ')[0];
+        currentStandardId = stopId;
+        // ✅ 디버깅 추가: 브라우저 콘솔에 전송할 ARS ID 출력
+        console.log(`DEBUG_CLIENT: Setting Standard ARS ID: ${arsIdOnly}`);
+        reloadMainList();
+    }
+    
+    // ⭐ 정렬 기준 전환 함수
+    function toggleSort(sortBy) {
+        if (currentSortBy !== sortBy) {
+            currentSortBy = sortBy;
+        }
+        reloadMainList();
+    }
+
+
+    // 활성 장애 목록을 새로 로드하는 함수 (GET 요청)
+    function reloadMainList() {
+        const standardTitle = document.getElementById('standardTitle');
+        const incidentList = document.getElementById('incidentList');
+        
+        standardTitle.innerHTML = `🔄 현황 로드 중...`; 
+
+        fetch(API_BASE_URL + `/get_active_incidents?standard_id=${currentStandardId}&sort_by=${currentSortBy}`)
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status} (${response.statusText})`);
+                }
+                return response.json();
+            })
+            .then(data => {
+                const standardInfo = data.standard_info;
+                if (standardInfo) {
+                    let displayStopName = standardInfo.정류소명;
+                    
+                    displayStopName = displayStopName.replace(/(\s\([^)]+\))$/, (match, p1) => {
+                        return `<span class="type-color">${p1}</span>`;
+                    });
+
+                    standardTitle.innerHTML = `✅ 정류장:${displayStopName} <span class="location-success"></span>`;
+                } else {
+                    standardTitle.innerHTML = `❌ 기준 정류장: ${currentStandardId} <span class="error">(위치 로드 실패 / DB 확인 필요)</span>`;
+                }
+                
+                let listHtml = `
+                    <table class="incident-table">
+                        <thead>
+                            <tr>
+                                <th style="width: 15%; cursor: pointer;" onclick="toggleSort('id')">정류장번호 ↓</th>
+                                <th style="width: 15%; cursor: pointer;" onclick="toggleSort('time')">발생시간 ↓</th>  
+                                <th style="width: 15%; cursor: pointer;" onclick="toggleSort('distance')">거리↓</th>
+                                <th style="width: 55%;">진행사항</th> 
+                            </tr>
+                        </thead>
+                        <tbody>
+                `;
+
+
+                if (data.incidents.length === 0) {
+                    listHtml += `<tr><td colspan="4" style="text-align: center; color: #6c757d;">현재 활성 장애 목록이 없습니다.</td></tr>`;
+                } else {
+                    data.incidents.forEach(item => {
+                        const actionDisplay = item.action ? `<span class="action-text">${item.action}</span>` : '';
+                        const distanceValue = item.distance_display ? item.distance_display.replace('km', '').trim() : 'N/A';
+
+                        listHtml += `
+                            <tr class="" 
+                                onclick="setStandardId('${item.id}')"
+                                ondblclick="showDetailModal('${item.id}')"
+                                data-id="${item.id}">
+                                
+                                <td><span class="incident-text">${item.id}</span></td> 
+                                <td><span class="incident-text">${item.time}</span></td>  
+                                <td><span class="incident-text">${distanceValue}</span></td> 
+                                <td>${actionDisplay}</td> </tr>
+                        `;
+                    });
+                }
+                listHtml += `</tbody></table>`;
+                incidentList.innerHTML = listHtml;
+            })
+
+            .catch(error => {
+                const errorMessage = error.message.includes("Unexpected token '<'") 
+                                ? "Cloudflare 주소 불일치/만료 또는 방화벽 문제" 
+                                : error.message;
+
+                standardTitle.innerHTML = `❌ 서버 연결 오류 (진단: ${errorMessage})`;
+                incidentList.innerHTML = `<div style="padding: 15px; color: #dc3545;"><strong>GET 요청 실패:</strong> Cloudflare 주소와 클라이언트 주소가 일치하는지 확인하세요.</div>`;
+                console.error("Fetch error:", error);
+            });
+    }
+
+
+    // 일괄 등록 처리 (POST 요청)
+    function processBatchAddition() {
+        const sampleText = document.getElementById('sampleText').value;
+        const batchMessage = document.getElementById('batchMessage');
+        batchMessage.style.display = 'none';
+        
+        if (!sampleText) {
+            batchMessage.innerHTML = `<span class="error">❌ 오류:</span> 텍스트를 입력해주세요.`;
+            batchMessage.style.display = 'block';
+            return;
+        }
+
+        fetch(API_BASE_URL + '/process_sample', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ sample_text: sampleText }) 
+        })
+        .then(response => {
+            if (!response.ok) {
+                throw new Error(`HTTP ${response.status} (${response.statusText})`);
+            }
+            return response.json();
+        })
+        .then(data => {
+            batchMessage.innerHTML = `<span class="status-success">✅ 성공:</span> ${data.message}`;
+            batchMessage.style.display = 'block';
+            reloadMainList(); 
+        })
+        .catch(error => {
+            batchMessage.innerHTML = `<span class="error">❌ 통신 오류:</span> 서버 연결 또는 라우팅 오류가 의심됩니다. (진단: ${error.message})`;
+            batchMessage.style.display = 'block';
+            console.error("Batch post error:", error);
+        });
+    }
+    
+    // 상세 팝업 열기 (GET)
+    function showDetailModal(stopId) {
+        const arsIdOnly = stopId.split(' ')[0];
+        activeStopId = stopId;
+        openModal('detailModal');
+        const actionMessage = document.getElementById('actionMessage');
+        actionMessage.style.display = 'none';
+
+
+        const btnUpdate = document.getElementById('btnDetailUpdate');
+        const btnDelete = document.getElementById('btnDetailDelete');
+        const btnCreate = document.getElementById('btnDetailCreate');
+        
+        btnUpdate.style.display = 'none';
+        btnDelete.style.display = 'none';
+        btnCreate.style.display = 'none';
+
+        // ✅ 디버깅 추가: 브라우저 콘솔에 서버로 보낼 ID를 출력합니다.
+        console.log(`DEBUG_CLIENT: Fetching details for ARS ID: ${arsIdOnly}`);
+
+        fetch(API_BASE_URL + `/incident_details/${arsIdOnly}`)
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status} (${response.statusText})`);
+                }
+                return response.json();
+            })
+
+        .then(data => {
+                const masterInfo = data.master_info;
+                const activeData = data.active_data;
+                const history = data.history;
+                
+                document.getElementById('detailStopId').textContent = masterInfo.id;
+                document.getElementById('detailStopName').textContent = masterInfo.정류소명;
+                
+                // 시설물 세부 정보 표시
+                document.getElementById('detailAssetKey').textContent = masterInfo["시설물키"] || '';
+                document.getElementById('detailBusinessType').textContent = masterInfo["사업유형"] || '';
+                document.getElementById('detailAssetType1').textContent = masterInfo["시설물유형.1"] || '';
+
+                document.getElementById('detailAssetName').textContent = masterInfo.시설물명 || '';
+                document.getElementById('detailAssetType').textContent = masterInfo.시설물유형 || '';
+                document.getElementById('detailCommMethod').textContent = masterInfo.통신방식 || '';
+                document.getElementById('detailCommType').textContent = masterInfo.통신사_유형 || '';
+                document.getElementById('detailOperator').textContent = masterInfo.사업자_이름 || '';
+                document.getElementById('detailManufacturer').textContent = masterInfo.제조자 || '';
+                document.getElementById('detailBITType').textContent = masterInfo.BIT제품종류 || '';
+                document.getElementById('detailBITUsage').textContent = masterInfo.BIT사용여부 || '';
+                document.getElementById('detailIncidentCount').textContent = masterInfo.장애건수 !== null ? masterInfo.장애건수 : '';
+
+
+               
+                if (activeData) {
+                    document.getElementById('detailTime').textContent = activeData.time;
+                    document.getElementById('actionText').value = activeData.action || '';
+                    
+                    btnUpdate.style.display = 'block';
+                    btnDelete.style.display = 'block';
+
+                } else {
+                    document.getElementById('detailTime').textContent = 'N/A';
+                    document.getElementById('actionText').value = ''; 
+                    
+                    btnCreate.style.display = 'block';
+                }
+
+                const historyList = document.getElementById('historyList');
+                historyList.innerHTML = '';
+                if (history && history.length > 0) {
+                    history.forEach(h => {
+                        const statusClass = h.status === 'COMPLETED' ? 'status-success' : 'status-pending';
+                        historyList.innerHTML += `
+                            <div class="history-item">
+                                [${h.time}] <span class="${statusClass}">${h.status}</span> - ${h.action || '진행사항 기록 없음'}
+                            </div>
+                        `;
+                    });
+                } else {
+                    historyList.textContent = '기록된 히스토리가 없습니다.';
+                }
+
+            })
+            .catch(error => {
+                alert(`상세 정보 로드 중 오류 발생: ${error.message}`);
+                closeModal('detailModal');
+                console.error("Detail fetch error:", error);
+            });
+    }
+
+    // 진행사항 저장/삭제/신규 (POST)
+    async function updateAction(actionType) {
+        const actionText = document.getElementById('actionText').value;
+        const actionMessage = document.getElementById('actionMessage');
+        actionMessage.style.display = 'none';
+        
+        if (!actionText) {
+            actionMessage.innerHTML = `<span class="error">❌ 오류:</span> ${actionType === 'DELETE' ? '삭제' : actionType === 'CREATE' ? '신규 등록' : '수정'} 시 진행사항을 반드시 입력해야 합니다.`;
+            actionMessage.style.display = 'block';
+            return;
+        }
+
+        try {
+            const response = await fetch(API_BASE_URL + `/incident_details/${activeStopId}`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ action_type: actionType, action_text: actionText })
+            });
+            
+            if (!response.ok) {
+                throw new Error(`HTTP ${response.status} (${response.statusText})`);
+            }
+            
+            const data = await response.json();
+
+            actionMessage.style.display = 'block';
+            actionMessage.innerHTML = `<span class="status-success">✅ 성공:</span> ${data.message}`;
+            reloadMainList(); 
+            if (actionType === 'DELETE' || actionType === 'CREATE') {
+                setTimeout(() => closeModal('detailModal'), 1000); 
+                activeStopId = null;
+            } else {
+                showDetailModal(activeStopId); 
+            }
+        } catch (error) {
+            actionMessage.innerHTML = `<span class="error">❌ 통신 오류:</span> 서버 연결 또는 라우팅 오류가 의심됩니다. (진단: ${error.message})`;
+            console.error("Action post error:", error);
+        }
+    }
+
+    // [삭제] 래퍼 함수 (활성 상태에서 조치 완료)
+    function deleteIncident() { 
+        if(confirm(`정류장 ID ${activeStopId}를 활성 목록에서 삭제하고 조치 완료 상태로 히스토리에 기록하시겠습니까?`)) {
+            updateAction('DELETE'); 
+        }
+    }
+    
+    // [신규 등록] 래퍼 함수 (비활성 상태에서 활성화)
+    function createIncidentFromDetail() { 
+        if(confirm(`정류장 ID ${activeStopId}를 활성 장애로 신규 등록하시겠습니까?`)) {
+            updateAction('CREATE'); 
+        }
+    }
+    
+    // 수동 등록 처리 (POST)
+    function createManualIncident() { 
+        const manualStopId = document.getElementById('manualStopId').value.trim();
+        const manualActionText = document.getElementById('manualActionText').value;
+        const manualMessage = document.getElementById('manualMessage');
+        manualMessage.style.display = 'none';
+
+        if (!manualStopId || !manualActionText) {
+            manualMessage.innerHTML = `<span class="error">❌ 오류:</span> 정류장 ID와 진행사항을 모두 입력해야 합니다.`;
+            manualMessage.style.display = 'block';
+            return;
+        }
+        
+        if(confirm(`정류장 ID ${manualStopId}를 활성 장애로 수동 추가하시겠습니까? 진행사항이 함께 저장됩니다.`)) {
+            fetch(API_BASE_URL + `/incident_details/${manualStopId}`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ action_type: 'CREATE', action_text: manualActionText })
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status} (${response.statusText})`);
+                }
+                return response.json();
+            })
+            .then(data => {
+                manualMessage.style.display = 'block';
+                if (data.message.includes('성공')) {
+                    manualMessage.innerHTML = `<span class="status-success">✅ 성공:</span> ${data.message}`;
+                    reloadMainList();
+                    setTimeout(() => closeModal('manualModal'), 1000);
+                } else {
+                    manualMessage.innerHTML = `<span class="error">❌ 실패:</span> ${data.message || '서버 오류'}`;
+                }
+            })
+            .catch(error => {
+                manualMessage.innerHTML = `<span class="error">❌ 통신 오류:</span> 서버 연결 또는 Cloudflare 주소 불일치가 의심됩니다.`;
+                manualMessage.style.display = 'block';
+                console.error("Manual create error:", error);
+            });
+        }
+    }
+
+
+    // 페이지 로드 시 초기 기준 ID로 현황 데이터를 바로 표시
+    window.onload = function() {
+        reloadMainList();
+    };
+
+// ----------------------------------------------------
+// --- [1/3] 신규: 센터 등록 처리 함수 (submitCenterRegister) ---
+// ----------------------------------------------------
+async function submitCenterRegister() {
+    const form = document.getElementById('centerRegisterForm');
+    const messageDisplay = document.getElementById('centerRegisterMessage');
+    const resultList = document.getElementById('centerResultList');
+    
+    messageDisplay.style.display = 'none';
+    messageDisplay.className = 'modal-message';
+    resultList.innerHTML = `<p style="text-align: center; color: #6c757d; padding: 15px;">... 파일 처리 중 ...</p>`;
+
+    const formData = new FormData(form);
+    let fileCount = 0;
+    
+    // 선택된 파일이 있는지 확인
+    for (const [key, value] of formData.entries()) {
+        if (value instanceof File && value.size > 0) {
+            fileCount++;
+        }
+    }
+    
+    if (fileCount === 0) {
+        messageDisplay.className = 'modal-message error';
+        messageDisplay.innerHTML = `❌ 오류: 처리할 CSV 파일을 하나 이상 선택해야 합니다.`;
+        messageDisplay.style.display = 'block';
+        resultList.innerHTML = `<p style="text-align: center; color: #6c757d; padding: 15px;">파일 처리 후 결과가 여기에 표시됩니다.</p>`;
+        return;
+    }
+
+    try {
+        const response = await fetch(API_BASE_URL + '/center_register', {
+            method: 'POST',
+            body: formData 
+        });
+
+        if (!response.ok) {
+            const errorData = await response.json().catch(() => ({ message: '응답 본문 없음' }));
+            throw new Error(`HTTP ${response.status}: ${errorData.message || response.statusText}`);
+        }
+        
+        const data = await response.json();
+        messageDisplay.style.display = 'block';
+
+        if (data.data && data.data.length > 0) {
+            messageDisplay.className = 'modal-message status-success';
+            messageDisplay.innerHTML = `✅ 성공: ${data.message}`;
+            displayCenterResults(data.data);
+        } else {
+            messageDisplay.className = 'modal-message warning';
+            messageDisplay.innerHTML = `⚠️ 주의: ${data.message}`;
+            resultList.innerHTML = `<p style="text-align: center; color: #6c757d; padding: 15px;">${data.message}</p>`;
+            displayCenterResults([]); // 데이터가 없으면 복사 텍스트도 비우도록 호출
+        }
+        
+    } catch (error) {
+        messageDisplay.className = 'modal-message error';
+        messageDisplay.innerHTML = `❌ 통신/처리 오류: ${error.message}`;
+        messageDisplay.style.display = 'block';
+        resultList.innerHTML = `<p style="text-align: center; color: #dc3545; padding: 15px;">파일 처리 중 치명적인 오류가 발생했습니다. (CSV 인코딩 확인 필요)</p>`;
+        console.error("Center register error:", error);
+    }
+}
+
+
+// ----------------------------------------------------
+// --- [2/3] 신규: CSV 처리 결과 복사 함수 (로직 개선 유지) ---
+// ----------------------------------------------------
+function copyCenterResultsToClipboard() {
+    const messageDisplay = document.getElementById('centerRegisterMessage');
+    messageDisplay.style.display = 'block';
+
+    const lines = centerResultsTextForCopy.trim().split('\n');
+    const dataCount = lines.length - 1; // 헤더(첫 줄)를 제외한 데이터 라인 수
+
+    if (dataCount <= 0) { // 데이터 라인이 0이거나 음수이면 (헤더만 있거나 비어있으면)
+        messageDisplay.className = 'modal-message warning';
+        messageDisplay.innerHTML = `⚠️ 주의: 복사할 내용이 없습니다. CSV 파일을 먼저 처리하거나 (장애) 데이터가 있는지 확인해주세요.`;
+        return; 
+    }
+
+    // 전역 변수에 저장된 텍스트를 클립보드에 복사
+    navigator.clipboard.writeText(centerResultsTextForCopy)
+        .then(() => {
+            messageDisplay.className = 'modal-message status-success';
+            messageDisplay.innerHTML = `✅ 성공: 총 ${dataCount}건의 결과가 클립보드에 복사되었습니다.`;
+            setTimeout(() => messageDisplay.style.display = 'none', 2000);
+        })
+        .catch(err => {
+            messageDisplay.className = 'modal-message error';
+            messageDisplay.innerHTML = `❌ 복사 오류: 클립보드 접근 권한이 없거나 브라우저에서 지원하지 않습니다.`;
+            console.error('클립보드 복사 실패:', err);
+        });
+}
+
+
+// ----------------------------------------------------
+// --- [3/3] 통합: displayCenterResults 함수 (3개 공백 구분자 적용) ---
+// ----------------------------------------------------
+function displayCenterResults(results) {
+    const resultList = document.getElementById('centerResultList');
+    
+    // ⭐⭐ 수정: 복사할 텍스트 헤더를 '세 개의 공백'으로 구분
+    centerResultsTextForCopy = "종 류   정류장ID   장애발생시각\n"; 
+    
+    let tableHtml = `
+        <table class="incident-table small-text">
+            <thead>
+                <tr>
+                    <th style="width: 25%;">종 류</th>
+                    <th style="width: 35%;">정류장ID</th>
+                    <th style="width: 40%;">장애발생시각</th>
+                </tr>
+            </thead>
+            <tbody>
+    `;
+    
+    if (results.length === 0) {
+        centerResultsTextForCopy = ''; 
+        tableHtml += `<tr><td colspan="3" style="text-align: center; color: #6c757d; padding: 15px;">파일에서 장애 데이터가 발견되지 않았습니다.</td></tr>`;
+    } else {
+        results.forEach(item => {
+            const type_tag = item.type.replace(/\[|\]/g, ''); 
+            let tag_class = '';
+            if (type_tag === '독립') tag_class = 'status-danger'; 
+            else if (type_tag === '알뜰') tag_class = 'status-warning'; 
+            else if (type_tag === '미니') tag_class = 'status-success'; 
+            
+            tableHtml += `
+                <tr>
+                    <td><span class="${tag_class}" style="padding: 2px 5px; border-radius: 3px;">${item.type}</span></td>
+                    <td>${item.ars_id}</td>
+                    <td>${item.time}</td>
+                </tr>
+            `;
+            // ⭐⭐ 수정: 복사할 텍스트 본문 추가 시 '세 개의 공백'을 사용하여 포맷팅
+            centerResultsTextForCopy += `${item.type}   ${item.ars_id}   ${item.time}\n`;
+        });
+    }
+    
+    tableHtml += `</tbody></table>`;
+    resultList.innerHTML = tableHtml;
+}
+
+// index.html의 <script> 태그 내부, 기존 함수들 다음에 다음 코드를 추가합니다.
+
+    // --- 🌟 1. 일괄 등록 기능 🌟 ---
+   function batchRegister() {
+    const batchInputArea = document.getElementById('batchInputArea');
+    const messageDisplay = document.getElementById('batchRegisterMessage');
+    const incidentData = batchInputArea.value.trim();
+
+    messageDisplay.style.display = 'none';
+    messageDisplay.className = 'modal-message';
+    messageDisplay.innerHTML = '처리 중...';
+    messageDisplay.style.display = 'block';
+
+    if (!incidentData) {
+        messageDisplay.innerHTML = '<span class="error">❌ 오류:</span> 등록할 데이터가 없습니다.';
+        messageDisplay.style.display = 'block';
+        return;
+    }
+    
+    // 서버로 데이터 전송
+    fetch(API_BASE_URL + '/batch_register', { 
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ incident_data: incidentData })
+    })
+    .then(response => {
+        // HTTP 상태 코드가 400 이상일 때 처리
+        if (!response.ok) {
+            // 서버가 JSON 오류 응답을 보냈다면 JSON으로 처리
+            return response.json().catch(() => {
+                // 서버가 JSON이 아닌 일반 텍스트나 HTML 오류 페이지를 보냈다면, 통신 상태만 던짐
+                throw new Error(`HTTP ${response.status} (${response.statusText || '서버 응답 없음'})`);
+            })
+            .then(err => {
+                // 서버가 JSON 오류 응답을 보낸 경우 (err.error, err.details 포함)
+                throw err;
+            });
+        }
+        return response.json();
+    })
+    .then(data => {
+        // 성공 응답 처리 (data.message, data.success_count, data.fail_count 포함)
+        let html = `<span class="status-success">✅ ${data.message}</span>`;
+        if (data.fail_count > 0 && data.errors && data.errors.length > 0) {
+            html += `<br><details><summary style="color: #ffc107; cursor: pointer;">👉 실패 항목 ${data.fail_count}건 보기</summary>`;
+            html += '<ul>' + data.errors.map(err => `<li>${err}</li>`).join('') + '</ul>';
+            html += '</details>';
+            messageDisplay.className = 'modal-message status-warning'; 
+        } else {
+            messageDisplay.className = 'modal-message status-success'; 
+        }
+        messageDisplay.innerHTML = html;
+        
+        reloadMainList(); 
+        // batchInputArea.value = ''; 
+    })
+    .catch(error => {
+        // 최종 오류 처리 (통신 오류 또는 서버에서 보낸 JSON 오류)
+        let errorMsg = '통신 오류';
+        let detailMsg = '';
+        
+        if (error.error) {
+            // 서버에서 보낸 JSON 오류 객체인 경우 (HTTP 500)
+            errorMsg = error.error || '서버 내부 오류';
+            detailMsg = error.details || '상세 정보 없음';
+        } else {
+            // 통신 자체의 오류 (네트워크, 라우팅 문제)
+            errorMsg = '통신 오류';
+            detailMsg = error.message;
+        }
+
+        messageDisplay.innerHTML = `<span class="error">❌ ${errorMsg}:</span> ${detailMsg}`;
+        messageDisplay.style.display = 'block';
+        messageDisplay.className = 'modal-message status-error';
+        console.error("Batch register error:", error);
+    });
+}
+
+</script>
+
+<div id="centerRegisterModal" class="modal">
+    <div class="modal-content large-modal"> <span class="close" onclick="closeModal('centerRegisterModal')">&times;</span>
+        <h2>센터 등록 (CSV 파일 업로드)</h2>
+        <p>각 유형별 CSV 파일을 선택하면, 파일 내 장애 항목(통신, 전원, 도어, 충격)이 있는 정류장의 목록을 확인합니다.</p>
+        
+        <form id="centerRegisterForm" enctype="multipart/form-data"> <div class="file-input-group">
+                <label for="independent_file">1. 독립형 첨부파일 (선택 사항):</label>
+                <input type="file" id="independent_file" name="independent_file" accept=".csv">
+            </div>
+            
+            <div class="file-input-group">
+                <label for="thrifty_file">2. 알뜰형 첨부파일 (선택 사항):</label>
+                <input type="file" id="thrifty_file" name="thrifty_file" accept=".csv">
+            </div>
+            
+            <div class="file-input-group">
+                <label for="mini_file">3. 미니형 첨부파일 (선택 사항):</label>
+                <input type="file" id="mini_file" name="mini_file" accept=".csv">
+            </div>
+            
+            <div id="centerRegisterMessage" class="modal-message"></div>
+            
+            <div class="btn-group">
+                <button type="button" class="btn btn-primary" onclick="submitCenterRegister()">CSV 파일 처리</button>
+            </div>
+        </form>
+        
+        <div id="centerResultDisplay" style="margin-top: 20px;">
+            <h3>처리 결과 목록<
+                   <button class="btn btn-secondary" onclick="copyCenterResultsToClipboard()" style="float: right; font-size: 0.8em;">📋 결과 복사</button>
+            </h3>
+            <div id="centerResultList" class="incident-table-container">
+                <p style="color: #6c757d;">파일 처리 후 결과가 여기에 표시됩니다.</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+</body>
+</html>
