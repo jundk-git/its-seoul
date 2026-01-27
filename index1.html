@@ -94,8 +94,13 @@ body {
         }
 
         /* ⭐ 5개 단위로 굵은 구분선 추가 */
+        /* .incident-table tbody tr:nth-child(5n) td { */
+        /*     border-bottom: 2px solid #666 !important; */
+        /* }  */
+
+        /* ⭐ 5개 단위로 조금 더 연한 구분선으로 수정 */
         .incident-table tbody tr:nth-child(5n) td {
-            border-bottom: 2px solid #666 !important;
+            border-bottom: 1px solid #bbb !important; /* 두께를 1px로 줄이고 색상을 연하게 변경 */
         }
 
         .incident-table th {
