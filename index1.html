@@ -633,11 +633,16 @@ body {
             });
     }
 
-    // 진행사항 저장/삭제/신규 (POST)
-    async function updateAction(actionType) {
-        const actionText = document.getElementById('actionText').value;
-        const actionMessage = document.getElementById('actionMessage');
-        actionMessage.style.display = 'none';
+
+        async function updateAction(stopId, actionText) {
+        const response = await fetch(`${API_BASE_URL}/incident_details/${stopId}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+                action_type: 'UPDATE_ACTION',
+                action_text: actionText
+            })
+        });
         
         if (!actionText) {
             actionMessage.innerHTML = `<span class="error">❌ 오류:</span> ${actionType === 'DELETE' ? '삭제' : actionType === 'CREATE' ? '신규 등록' : '수정'} 시 진행사항을 반드시 입력해야 합니다.`;
