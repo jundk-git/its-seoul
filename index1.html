@@ -377,7 +377,7 @@ body {
 <script>
     // 🚨🚨🚨 NGROK 문제 해결! Cloudflare Tunnel 주소로 변경되었습니다. 🚨🚨🚨
     // 터널을 껐다 켤 때마다 이 주소를 수동으로 업데이트해야 합니다.
-    const API_BASE_URL = 'https://including-activity-stages-movies.trycloudflare.com'; 
+    const API_BASE_URL = 'https://setup-ability-ultimately-soup.trycloudflare.com'; 
 
     let currentStandardId = '22-142'; 
     let activeStopId = null;         
@@ -424,43 +424,54 @@ body {
         reloadMainList();
     }
 
-    // [수정본] 새로고침 클릭 시에만 GPS를 가져와서 가까운 순으로 정렬
+
+    
+    // 활성 장애 목록을 새로 로드하는 함수 (GPS 기반 정렬 추가)
 function reloadMainList() {
     const standardTitle = document.getElementById('standardTitle');
     const incidentList = document.getElementById('incidentList');
     
-    // 1. 새로고침 시에만 "현재 위치 확인 중" 표시
     standardTitle.innerHTML = `🔄 현재 위치 확인 중...`; 
 
+    // 1. 브라우저의 GPS(Geolocation) 지원 여부 확인
     if (!navigator.geolocation) {
-        alert("이 브라우저는 위치 정보를 지원하지 않습니다.");
-        fetchDataByStandardId(currentStandardId); // GPS 미지원 시 기존 ID 기준 호출
+        console.warn("이 브라우저는 위치 정보를 지원하지 않습니다.");
+        // GPS 미지원 시 기존 ID 기반으로 호출 (백업)
+        fetchDataByStandardId(currentStandardId);
         return;
     }
 
-    // 2. 현재 위치 가져오기 (사용자가 새로고침을 눌렀을 때만 실행됨)
+    // 2. 현재 위치 좌표(위도, 경도) 가져오기
     navigator.geolocation.getCurrentPosition(
         (position) => {
             const lat = position.coords.latitude;
             const lon = position.coords.longitude;
             
-            // 3. 서버에 좌표 전달 (정렬 기준 currentSortBy 유지)
-            const url = `${API_BASE_URL}/get_active_incidents?lat=${lat}&lon=${lon}&sort_by=${currentSortBy}`;
+            // 3. 서버에 좌표를 파라미터로 전달 (lat, lon 추가)
+            const url = `${API_BASE_URL}/get_active_incidents?lat=${lat}&lon=${lon}&sort_by=distance`;
             
             fetch(url)
-                .then(response => response.json())
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error(`HTTP ${response.status} (${response.statusText})`);
+                    }
+                    return response.json();
+                })
                 .then(data => {
+                    // 상단 기준 정보 업데이트
                     const standardInfo = data.standard_info;
                     if (standardInfo) {
                         let displayStopName = standardInfo.정류소명;
                         displayStopName = displayStopName.replace(/(\s\([^)]+\))$/, (match, p1) => {
                             return `<span class="type-color">${p1}</span>`;
                         });
-                        // 내 현재 위치 기준임을 명시
+                        // 현재 위치 기준임을 표시
                         standardTitle.innerHTML = `📍 내 현재 위치 기준 <span class="location-success"></span>`;
+                    } else {
+                        standardTitle.innerHTML = `❌ 위치 로드 실패 (DB 확인 필요)`;
                     }
                     
-                    // 4. 기존 정렬 헤더 유지 (정류장번호, 발생시간, 거리 정렬 기능 원위치)
+                    // 테이블 생성 로직
                     let listHtml = `
                         <table class="incident-table">
                             <thead>
@@ -481,10 +492,14 @@ function reloadMainList() {
                             const statusText = item.action || "";
                             const isHighlight = statusText.includes("[민원]") || statusText.includes("[민투]");
                             const actionDisplay = statusText ? `<span class="${isHighlight ? 'action-text' : 'status-light'}">${statusText}</span>` : '';
+                            
                             const distanceValue = item.distance_display ? item.distance_display.replace('km', '').trim() : 'N/A';
                             
                             listHtml += `
-                                <tr onclick="setStandardId('${item.id}')" ondblclick="showDetailModal('${item.id}')">
+                                <tr class="" 
+                                    onclick="setStandardId('${item.id}')"
+                                    ondblclick="showDetailModal('${item.id}')"
+                                    data-id="${item.id}">
                                     <td><span class="incident-text">${item.id}</span></td> 
                                     <td><span class="incident-text">${item.time}</span></td>  
                                     <td><span class="incident-text">${distanceValue}km</span></td> 
@@ -496,28 +511,32 @@ function reloadMainList() {
                     listHtml += `</tbody></table>`;
                     incidentList.innerHTML = listHtml;
                 })
-                .catch(error => handleFetchError(error, standardTitle, incidentList));
+                .catch(error => {
+                    handleFetchError(error, standardTitle, incidentList);
+                });
         },
         (error) => {
-            // 위치 권한 거부 시 기존 기준 정류소(22-142 등)로 복구
+            console.error("위치 획득 실패:", error);
+            // GPS 실패 시 기존 ID 기반으로 데이터 로드 (백업 로직)
             fetchDataByStandardId(currentStandardId);
         },
-        { enableHighAccuracy: true, timeout: 7000 }
+        { enableHighAccuracy: true, timeout: 10000 }
     );
 }
 
-// 초기 로딩 시에는 GPS 요청 없이 기본 ID로만 로드 (자동 확인 방지)
-function initialLoad() {
-    fetchDataByStandardId(currentStandardId);
+// 에러 핸들링 공통 함수 (기존 코드 유지)
+function handleFetchError(error, titleElem, listElem) {
+    const errorMessage = error.message.includes("Unexpected token '<'") 
+                        ? "Cloudflare 주소 불일치/만료 또는 방화벽 문제" 
+                        : error.message;
+    titleElem.innerHTML = `❌ 서버 연결 오류 (진단: ${errorMessage})`;
+    listElem.innerHTML = `<div style="padding: 15px; color: #dc3545;"><strong>GET 요청 실패:</strong> 서버 연결을 확인하세요.</div>`;
 }
 
-// 페이지 로드 시 실행
-initialLoad();
+// 초기 로드 및 자동 새로고침 설정 유지
+reloadMainList();
+setInterval(reloadMainList, 15000);
 
-// 15초 자동 갱신은 GPS 없이 일반 데이터 갱신만 수행 (배터리/권한 문제 방지)
-setInterval(() => {
-    fetchDataByStandardId(currentStandardId);
-}, 15000);
 
 
 
