@@ -90,23 +90,12 @@ body {
             text-align: left;
             border-bottom: 1px solid #ddd;
             font-size: 0.8em;
-            white-space: nowrap; 
+            white-space: pre;  /*  white-space: nowrap;  ⬅️ 원래 'nowrap'이었던 것을 'pre'로 바꾸거나 추가하세요! */
         }
 
         /* ⭐ 5개 단위로 굵은 구분선 추가 */
-        /* .incident-table tbody tr:nth-child(5n) td { */
-        /*     border-bottom: 2px solid #666 !important; */
-        /* }  */
-
-        /* ⭐ 5개 단위로 조금 더 연한 구분선으로 수정 */
-        /*.incident-table tbody tr:nth-child(5n) td {  */
-        /*    border-bottom: 1px solid #bbb !important; /* 두께를 1px로 줄이고 색상을 연하게 변경 */
-        /* } */
-
-
-        /* ⭐ 5개 단위로 '조금만 더 진한' 구분선으로 수정 */
         .incident-table tbody tr:nth-child(5n) td {
-            border-bottom: 1px solid #999 !important; /* 색상을 #bbb에서 #999로 변경 */
+            border-bottom: 2px solid #666 !important;
         }
 
         .incident-table th {
@@ -269,6 +258,12 @@ body {
 .status-warning { background-color: #fff3cd; color: #856404; } /* 알뜰: 노랑 계열 */
 .status-success { background-color: #d4edda; color: #155724; } /* 미니: 초록 계열 */
 
+/*    color: #adb5bd;  연한 회색 */
+
+.status-light {
+    color: #6c757d; /* ⬅️ 기존보다 진한 회색으로 변경 */
+    font-weight: normal;
+}
 
     </style>
 </head>
@@ -354,7 +349,7 @@ body {
             <div id="actionMessage" class="modal-message"></div>
             
             <div class="btn-group">
-                <button id="btnDetailUpdate" class="btn btn-primary" onclick="updateAction(activeStopId)">진행사항 수정</button>
+                <button id="btnDetailUpdate" class="btn btn-primary" onclick="updateAction('UPDATE_ACTION')">진행사항 수정</button>
                 <button id="btnDetailDelete" class="btn btn-danger" onclick="deleteIncident()">조치완료 삭제</button>
                 
                 <button id="btnDetailCreate" class="btn btn-success" onclick="createIncidentFromDetail()">신규 등록 (장애 활성화)</button>
@@ -382,7 +377,7 @@ body {
 <script>
     // 🚨🚨🚨 NGROK 문제 해결! Cloudflare Tunnel 주소로 변경되었습니다. 🚨🚨🚨
     // 터널을 껐다 켤 때마다 이 주소를 수동으로 업데이트해야 합니다.
-    const API_BASE_URL = 'https://mate-substantial-exchange-requested.trycloudflare.com'; 
+    const API_BASE_URL = 'https://setup-ability-ultimately-soup.trycloudflare.com'; 
 
     let currentStandardId = '22-142'; 
     let activeStopId = null;         
@@ -430,84 +425,122 @@ body {
     }
 
 
-    // 활성 장애 목록을 새로 로드하는 함수 (GET 요청)
-    function reloadMainList() {
-        const standardTitle = document.getElementById('standardTitle');
-        const incidentList = document.getElementById('incidentList');
-        
-        standardTitle.innerHTML = `🔄 현황 로드 중...`; 
+    
+    // 활성 장애 목록을 새로 로드하는 함수 (GPS 기반 정렬 추가)
+function reloadMainList() {
+    const standardTitle = document.getElementById('standardTitle');
+    const incidentList = document.getElementById('incidentList');
+    
+    standardTitle.innerHTML = `🔄 현재 위치 확인 중...`; 
 
-        fetch(API_BASE_URL + `/get_active_incidents?standard_id=${currentStandardId}&sort_by=${currentSortBy}`)
-            .then(response => {
-                if (!response.ok) {
-                    throw new Error(`HTTP ${response.status} (${response.statusText})`);
-                }
-                return response.json();
-            })
-            .then(data => {
-                const standardInfo = data.standard_info;
-                if (standardInfo) {
-                    let displayStopName = standardInfo.정류소명;
-                    
-                    displayStopName = displayStopName.replace(/(\s\([^)]+\))$/, (match, p1) => {
-                        return `<span class="type-color">${p1}</span>`;
-                    });
-
-                    standardTitle.innerHTML = `✅ 정류장:${displayStopName} <span class="location-success"></span>`;
-                } else {
-                    standardTitle.innerHTML = `❌ 기준 정류장: ${currentStandardId} <span class="error">(위치 로드 실패 / DB 확인 필요)</span>`;
-                }
-                
-                let listHtml = `
-                    <table class="incident-table">
-                        <thead>
-                            <tr>
-                                <th style="width: 15%; cursor: pointer;" onclick="toggleSort('id')">정류장번호 ↓</th>
-                                <th style="width: 15%; cursor: pointer;" onclick="toggleSort('time')">발생시간 ↓</th>  
-                                <th style="width: 15%; cursor: pointer;" onclick="toggleSort('distance')">거리↓</th>
-                                <th style="width: 55%;">진행사항</th> 
-                            </tr>
-                        </thead>
-                        <tbody>
-                `;
-
-
-                if (data.incidents.length === 0) {
-                    listHtml += `<tr><td colspan="4" style="text-align: center; color: #6c757d;">현재 활성 장애 목록이 없습니다.</td></tr>`;
-                } else {
-                    data.incidents.forEach(item => {
-                        const actionDisplay = item.action ? `<span class="action-text">${item.action}</span>` : '';
-                        const distanceValue = item.distance_display ? item.distance_display.replace('km', '').trim() : 'N/A';
-
-                        listHtml += `
-                            <tr class="" 
-                                onclick="setStandardId('${item.id}')"
-                                ondblclick="showDetailModal('${item.id}')"
-                                data-id="${item.id}">
-                                
-                                <td><span class="incident-text">${item.id}</span></td> 
-                                <td><span class="incident-text">${item.time}</span></td>  
-                                <td><span class="incident-text">${distanceValue}</span></td> 
-                                <td>${actionDisplay}</td> </tr>
-                        `;
-                    });
-                }
-                listHtml += `</tbody></table>`;
-                incidentList.innerHTML = listHtml;
-            })
-
-            .catch(error => {
-                const errorMessage = error.message.includes("Unexpected token '<'") 
-                                ? "Cloudflare 주소 불일치/만료 또는 방화벽 문제" 
-                                : error.message;
-
-                standardTitle.innerHTML = `❌ 서버 연결 오류 (진단: ${errorMessage})`;
-                incidentList.innerHTML = `<div style="padding: 15px; color: #dc3545;"><strong>GET 요청 실패:</strong> Cloudflare 주소와 클라이언트 주소가 일치하는지 확인하세요.</div>`;
-                console.error("Fetch error:", error);
-            });
+    // 1. 브라우저의 GPS(Geolocation) 지원 여부 확인
+    if (!navigator.geolocation) {
+        console.warn("이 브라우저는 위치 정보를 지원하지 않습니다.");
+        // GPS 미지원 시 기존 ID 기반으로 호출 (백업)
+        fetchDataByStandardId(currentStandardId);
+        return;
     }
 
+    // 2. 현재 위치 좌표(위도, 경도) 가져오기
+    navigator.geolocation.getCurrentPosition(
+        (position) => {
+            const lat = position.coords.latitude;
+            const lon = position.coords.longitude;
+            
+            // 3. 서버에 좌표를 파라미터로 전달 (lat, lon 추가)
+            const url = `${API_BASE_URL}/get_active_incidents?lat=${lat}&lon=${lon}&sort_by=distance`;
+            
+            fetch(url)
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error(`HTTP ${response.status} (${response.statusText})`);
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    // 상단 기준 정보 업데이트
+                    const standardInfo = data.standard_info;
+                    if (standardInfo) {
+                        let displayStopName = standardInfo.정류소명;
+                        displayStopName = displayStopName.replace(/(\s\([^)]+\))$/, (match, p1) => {
+                            return `<span class="type-color">${p1}</span>`;
+                        });
+                        // 현재 위치 기준임을 표시
+                        standardTitle.innerHTML = `📍 내 현재 위치 기준 <span class="location-success"></span>`;
+                    } else {
+                        standardTitle.innerHTML = `❌ 위치 로드 실패 (DB 확인 필요)`;
+                    }
+                    
+                    // 테이블 생성 로직
+                    let listHtml = `
+                        <table class="incident-table">
+                            <thead>
+                                <tr>
+                                    <th style="width: 15%; cursor: pointer;" onclick="toggleSort('id')">정류장번호 ↓</th>
+                                    <th style="width: 15%; cursor: pointer;" onclick="toggleSort('time')">발생시간 ↓</th>  
+                                    <th style="width: 15%; cursor: pointer;" onclick="toggleSort('distance')">거리↓</th>
+                                    <th style="width: 55%;">진행사항</th> 
+                                </tr>
+                            </thead>
+                            <tbody>
+                    `;
 
+                    if (data.incidents.length === 0) {
+                        listHtml += `<tr><td colspan="4" style="text-align: center; color: #6c757d;">현재 활성 장애 목록이 없습니다.</td></tr>`;
+                    } else {
+                        data.incidents.forEach(item => {
+                            const statusText = item.action || "";
+                            const isHighlight = statusText.includes("[민원]") || statusText.includes("[민투]");
+                            const actionDisplay = statusText ? `<span class="${isHighlight ? 'action-text' : 'status-light'}">${statusText}</span>` : '';
+                            
+                            const distanceValue = item.distance_display ? item.distance_display.replace('km', '').trim() : 'N/A';
+                            
+                            listHtml += `
+                                <tr class="" 
+                                    onclick="setStandardId('${item.id}')"
+                                    ondblclick="showDetailModal('${item.id}')"
+                                    data-id="${item.id}">
+                                    <td><span class="incident-text">${item.id}</span></td> 
+                                    <td><span class="incident-text">${item.time}</span></td>  
+                                    <td><span class="incident-text">${distanceValue}km</span></td> 
+                                    <td>${actionDisplay}</td> 
+                                </tr>
+                            `;
+                        });
+                    }
+                    listHtml += `</tbody></table>`;
+                    incidentList.innerHTML = listHtml;
+                })
+                .catch(error => {
+                    handleFetchError(error, standardTitle, incidentList);
+                });
+        },
+        (error) => {
+            console.error("위치 획득 실패:", error);
+            // GPS 실패 시 기존 ID 기반으로 데이터 로드 (백업 로직)
+            fetchDataByStandardId(currentStandardId);
+        },
+        { enableHighAccuracy: true, timeout: 10000 }
+    );
+}
+
+// 에러 핸들링 공통 함수 (기존 코드 유지)
+function handleFetchError(error, titleElem, listElem) {
+    const errorMessage = error.message.includes("Unexpected token '<'") 
+                        ? "Cloudflare 주소 불일치/만료 또는 방화벽 문제" 
+                        : error.message;
+    titleElem.innerHTML = `❌ 서버 연결 오류 (진단: ${errorMessage})`;
+    listElem.innerHTML = `<div style="padding: 15px; color: #dc3545;"><strong>GET 요청 실패:</strong> 서버 연결을 확인하세요.</div>`;
+}
+
+// 초기 로드 및 자동 새로고침 설정 유지
+reloadMainList();
+setInterval(reloadMainList, 15000);
+
+
+
+
+    
     // 일괄 등록 처리 (POST 요청)
     function processBatchAddition() {
         const sampleText = document.getElementById('sampleText').value;
@@ -633,16 +666,11 @@ body {
             });
     }
 
-
-        async function updateAction(stopId, actionText) {
-        const response = await fetch(`${API_BASE_URL}/incident_details/${stopId}`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-                action_type: 'UPDATE_ACTION',
-                action_text: actionText
-            })
-        });
+    // 진행사항 저장/삭제/신규 (POST)
+    async function updateAction(actionType) {
+        const actionText = document.getElementById('actionText').value;
+        const actionMessage = document.getElementById('actionMessage');
+        actionMessage.style.display = 'none';
         
         if (!actionText) {
             actionMessage.innerHTML = `<span class="error">❌ 오류:</span> ${actionType === 'DELETE' ? '삭제' : actionType === 'CREATE' ? '신규 등록' : '수정'} 시 진행사항을 반드시 입력해야 합니다.`;
