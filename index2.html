@@ -423,6 +423,40 @@ body {
         }
         reloadMainList();
     }
+    
+    // index2.html의 <script> 태그 안쪽
+async function fetchIncidents() {
+    console.log("[진단] 1. 데이터 요청을 시작합니다..."); // ⬅️ 추가
+    
+    try {
+        // 서버에 데이터를 요청합니다.
+        const response = await fetch('/api/incidents');
+        
+        console.log("[진단] 2. 서버 응답 상태 코드:", response.status); // ⬅️ 추가
+
+        if (!response.ok) {
+            // 서버 에러가 발생한 경우 상세 내용을 콘솔에 출력
+            const errorDetail = await response.text();
+            console.error("[진단] ❌ 서버 에러 발생:", errorDetail); // ⬅️ 추가
+            throw new Error(`서버 에러: ${response.status}`);
+        }
+
+        const data = await response.json();
+        console.log("[진단] 3. 받은 데이터 확인:", data); // ⬅️ 추가
+
+        if (!data.incidents || data.incidents.length === 0) {
+            console.warn("[진단] ⚠️ 표시할 장애 데이터(incidents)가 비어 있습니다."); // ⬅️ 추가
+        }
+
+        renderTable(data); // 기존 테이블 그리기 함수 호출
+        
+    } catch (error) {
+        console.error("[진단] 🔥 통신 중 오류 발생:", error); // ⬅️ 추가
+        // 화면에 에러 메시지 표시 (기존 코드 유지 또는 수정)
+        document.getElementById('incidentTableBody').innerHTML = 
+            `<tr><td colspan="6" style="color:red; text-align:center;">데이터를 불러오지 못했습니다. (사유: ${error.message})</td></tr>`;
+    }
+}
 
 
     // 활성 장애 목록을 새로 로드하는 함수 (GET 요청)
